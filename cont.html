@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PLUTO AI 🌌</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-deep:#07060c;
+    --bg-space:#0a0218;
+    --accent:#e53935;        /* red accent */
+    --accent-2:#6c63ff;      /* violet accent */
+    --text:#e8e7ff;
+    --muted:#a7a4d6;
+    --panel:#101022cc;
+    --bot:#1c1b2f;
+    --user:#3f2a80;
+    --border:#2b2850;
+  }
+
+  *{ box-sizing:border-box }
+  html, body { height:100% }
+  body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    background: radial-gradient(1200px 900px at 20% 10%, #140a2a 0%, #090718 40%, #06050d 100%);
+    overflow:hidden;
+  }
+
+  /* Stars */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(2px 2px at 10% 20%, #ffffff 40%, transparent 41%),
+      radial-gradient(2px 2px at 30% 80%, #cfd8ff 40%, transparent 41%),
+      radial-gradient(2px 2px at 60% 30%, #ffffff 40%, transparent 41%),
+      radial-gradient(2px 2px at 80% 70%, #cfd8ff 40%, transparent 41%),
+      radial-gradient(1.5px 1.5px at 50% 50%, #ffffff 40%, transparent 41%);
+    opacity:0.3;
+    pointer-events:none;
+    z-index:-1;
+  }
+
+  /* Aurora overlay */
+  .aurora{
+    position:fixed; inset:-10% -10%;
+    background:
+      conic-gradient(from 180deg at 50% 10%, #1c1445 0deg, #3b2a88 80deg, transparent 120deg),
+      conic-gradient(from 0deg at 70% 20%, #1a3f55 0deg, #28a3b5 60deg, transparent 120deg),
+      conic-gradient(from 0deg at 20% 80%, #3c1430 0deg, #e53935 30deg, transparent 140deg);
+    mix-blend-mode:screen;
+    filter:blur(40px);
+    animation:floatAurora 16s linear infinite;
+    opacity:0.35;
+    z-index:-1;
+  }
+  @keyframes floatAurora{
+    0% { transform:translateY(0) scale(1) }
+    50%{ transform:translateY(-2%) scale(1.02) }
+    100%{ transform:translateY(0) scale(1) }
+  }
+
+  /* Planets hint */
+  .planet{
+    position:fixed; right:6%; top:12%;
+    width:160px; height:160px; border-radius:50%;
+    background:radial-gradient(closest-side, #4336a6 0%, #2b2570 60%, #14103a 100%);
+    box-shadow: inset -20px -30px 40px rgba(255,255,255,0.06), 0 0 40px rgba(108,99,255,0.35);
+    opacity:.25;
+    z-index:-1;
+  }
+
+  header{
+    position:sticky; top:0; z-index:10;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:16px 12px 10px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-bottom:1px solid var(--border);
+    backdrop-filter:blur(8px);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px; font-weight:600; font-size:1.15rem;
+  }
+  .logo{
+    width:36px; height:36px; border-radius:50%;
+    background:radial-gradient(circle at 40% 40%, #9aa2ff, #5a4aff 60%, #261d66 100%);
+    box-shadow:0 0 12px #6c63ff88 inset, 0 0 6px #6c63ffaa;
+  }
+
+  /* Centered Google search bar under brand */
+  .search-bar{
+    width:min(720px, 92vw);
+    display:flex; gap:8px; align-items:center;
+    padding:10px 12px; border-radius:12px;
+    background:#121028cc; border:1px solid var(--border);
+  }
+  .search-bar .g-icon{ font-size:1.1rem }
+  .search-input{
+    flex:1; padding:10px 12px; border:none; border-radius:10px;
+    background:#1a1330; color:#fff; font-size:1rem;
+  }
+  .search-input:focus{ outline:2px solid var(--accent) }
+  .search-btn{
+    padding:10px 14px; border:none; border-radius:10px;
+    background:linear-gradient(180deg, var(--accent), #c62828);
+    color:#fff; font-weight:600; cursor:pointer;
+  }
+
+  #chat{
+    flex:1; overflow-y:auto; padding:18px;
+    display:flex; flex-direction:column; gap:10px;
+    scroll-behavior:smooth;
+  }
+  .row{ display:flex; gap:8px; align-items:flex-start }
+  .avatar{
+    width:32px; height:32px; border-radius:50%;
+    background: radial-gradient(circle at 50% 50%, #2b2660, #16133a);
+    border:1px solid var(--border);
+    box-shadow:0 0 8px rgba(108,99,255,0.35);
+    flex:0 0 32px;
+  }
+  .avatar.user{ background: radial-gradient(circle at 50% 50%, #6c63ff, #3a2f80) }
+  .msg{
+    max-width:78%;
+    padding:10px 14px; border-radius:14px;
+    background:var(--bot); border:1px solid var(--border);
+    line-height:1.52; box-shadow:0 3px 10px rgba(0,0,0,0.25);
+    animation:fadeIn .25s ease;
+    word-wrap:break-word;
+  }
+  .msg.user{ background:var(--user) }
+  .bubble-meta{ margin-top:6px; font-size:.78rem; color:var(--muted) }
+
+  .typing{
+    display:inline-block; width:36px; height:16px;
+    background:linear-gradient(90deg,#2a2755,#1a183f);
+    border-radius:10px; border:1px solid var(--border);
+    position:relative;
+  }
+  .typing::before, .typing::after{
+    content:''; position:absolute; top:50%; transform:translateY(-50%);
+    width:6px; height:6px; border-radius:50%;
+    background:var(--accent); animation:blink 1.2s infinite ease-in-out;
+  }
+  .typing::before{ left:8px }
+  .typing::after{ left:22px; animation-delay:.3s }
+  .typing span{
+    position:absolute; left:15px; top:50%; transform:translate(-50%,-50%);
+    width:6px; height:6px; border-radius:50%; background:var(--accent);
+    animation:blink 1.2s infinite ease-in-out; animation-delay:.6s
+  }
+  @keyframes blink{
+    0%,100%{ opacity:.3; transform:translateY(-50%) scale(.8) }
+    50%{ opacity:1; transform:translateY(-50%) scale(1) }
+  }
+  @keyframes fadeIn{
+    from{ opacity:0; transform:translateY(6px) }
+    to{ opacity:1; transform:translateY(0) }
+  }
+
+  .card{
+    padding:10px 12px; border:1px solid #3a3570; border-radius:10px; background:#121028;
+    margin-top:8px;
+  }
+  .links a{
+    display:inline-flex; align-items:center; gap:8px;
+    background:#262255; border:1px solid #3a3570; color:#ddd;
+    padding:8px 12px; border-radius:8px; text-decoration:none; margin-right:8px; margin-top:6px;
+  }
+  .links a:hover{ border-color:#6c63ff; color:#fff }
+
+  .image-gallery{ display:flex; gap:8px; overflow-x:auto; margin-top:8px; padding-bottom:4px }
+  .image-gallery img{ height:120px; border-radius:8px; object-fit:cover; background:#0b0b16 }
+
+  /* Bottom dock */
+  #dock{
+    display:flex; justify-content:space-around; align-items:center;
+    padding:10px 8px; background:#0b0b14cc; backdrop-filter:blur(8px);
+    border-top:1px solid var(--border);
+    position:sticky; bottom:0; width:100%;
+  }
+  .dock-item{
+    display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;
+    color:#d9d6ff; min-width:64px;
+  }
+  .dock-icon{
+    width:28px; height:28px;
+    display:grid; place-items:center;
+    background:#17162a; border:1px solid #2c2952; border-radius:8px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.35);
+  }
+  .dock-label{ font-size:.8rem; color:#a7a4d6 }
+  .dock-item:hover .dock-icon{ border-color:#6c63ff }
+  .dock-item.active .dock-icon{ border-color:var(--accent) }
+
+  /* Mobile adjustments */
+  @media (max-width:700px){
+    .msg{ max-width:88%; font-size:.95rem }
+    .search-bar{ width:96vw }
+    .planet{ display:none }
+    .dock-label{ font-size:.75rem }
+  }
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<div class="planet" aria-hidden="true"></div>
+
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true"></div>
+    <div>🌌 PLUTO AI</div>
+  </div>
+
+  <!-- Centered Google search bar -->
+  <div class="search-bar" id="searchBar">
+    <span class="g-icon">🔍</span>
+    <input class="search-input" id="gq" type="text" placeholder="Search with " />
+    <button class="search-btn" id="gSearchBtn">Search</button>
+  </div>
+</header>
+
+<div id="chat"></div>
+
+<!-- Bottom Dock -->
+<!-- Bottom Dock -->
+<div id="dock">
+  <div class="dock-item" data-app="google">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/google-logo.png" alt="Google">
+    <div class="dock-label">Google</div>
+  </div>
+
+  <div class="dock-item" data-app="amazon">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/amazon.png" alt="Amazon">
+    <div class="dock-label">Amazon</div>
+  </div>
+
+  <div class="dock-item" data-app="chrome">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/chrome.png" alt="Chrome">
+    <div class="dock-label">Chrome</div>
+  </div>
+
+  <div class="dock-item" data-app="youtube">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/youtube-play.png" alt="YouTube">
+    <div class="dock-label">YouTube</div>
+  </div>
+
+  <div class="dock-item" data-app="gmail">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/gmail-new.png" alt="Gmail">
+    <div class="dock-label">Gmail</div>
+  </div>
+
+  <div class="dock-item" data-app="maps">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/google-maps-new.png" alt="Maps">
+    <div class="dock-label">Maps</div>
+  </div>
+
+  <div class="dock-item" data-app="drive">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/google-drive.png" alt="Drive">
+    <div class="dock-label">Drive</div>
+  </div>
+
+  <div class="dock-item" data-app="netflix">
+    <img class="dock-icon" src="https://img.icons8.com/color/48/netflix.png" alt="Netflix">
+    <div class="dock-label">Netflix</div>
+  </div>
+</div>
+
+
+<script>
+  const chat = document.getElementById('chat');
+
+  const now = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  function addRow(sender, html){
+    const row = document.createElement('div'); row.className = 'row';
+    const avatar = document.createElement('div'); avatar.className = 'avatar ' + (sender==='user'?'user':'bot');
+    const msg = document.createElement('div'); msg.className = 'msg ' + (sender==='user'?'user':'bot');
+    msg.innerHTML = html;
+    const meta = document.createElement('div'); meta.className = 'bubble-meta'; meta.textContent = now();
+    msg.appendChild(meta);
+    row.appendChild(avatar); row.appendChild(msg);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function addTyping(){
+    const row = document.createElement('div'); row.className = 'row typing-row';
+    const avatar = document.createElement('div'); avatar.className = 'avatar bot';
+    const msg = document.createElement('div'); msg.className = 'msg bot';
+    msg.innerHTML = '<div class="typing"><span></span></div><div class="bubble-meta">'+now()+'</div>';
+    row.appendChild(avatar); row.appendChild(msg);
+    chat.appendChild(row); chat.scrollTop = chat.scrollHeight;
+  }
+  function removeTyping(){ const t = document.querySelector('.typing-row'); if (t) t.remove(); }
+
+  function sanitize(text){
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // App URLs
+  const apps = {
+    amazon: 'https://www.amazon.in/',
+    chrome: 'https://chromewebstore.google.com/',
+    youtube: 'https://www.youtube.com/',
+    gmail: 'https://mail.google.com/',
+    maps: 'https://maps.google.com/',
+    drive: 'https://drive.google.com/',
+    netflixLogin: 'https://www.netflix.com/in/login'
+  };
+
+  // Recognized official sites for quick linking
+  const knownOfficial = {
+    // Search Engines
+  google: "https://www.google.com",
+  bing: "https://www.bing.com",
+  duckduckgo: "https://duckduckgo.com",
+  yahoo: "https://www.yahoo.com",
+
+  // OTT / Streaming
+  netflix: "https://www.netflix.com",
+  primevideo: "https://www.primevideo.com",
+  disneyplus: "https://www.disneyplus.com",
+  hotstar: "https://www.hotstar.com",
+  sonyLiv: "https://www.sonyliv.com",
+  zee5: "https://www.zee5.com",
+
+  // E-commerce
+  amazon: "https://www.amazon.com",
+  flipkart: "https://www.flipkart.com",
+  myntra: "https://www.myntra.com",
+  snapdeal: "https://www.snapdeal.com",
+
+  // Tech / Browsers / Tools
+  chrome: "https://www.google.com/chrome/",
+  firefox: "https://www.mozilla.org/firefox/",
+  edge: "https://www.microsoft.com/edge",
+  github: "https://github.com",
+  stackoverflow: "https://stackoverflow.com",
+
+  // Social Media
+  facebook: "https://www.facebook.com",
+  instagram: "https://www.instagram.com",
+  twitter: "https://twitter.com",
+  linkedin: "https://www.linkedin.com",
+  pinterest: "https://www.pinterest.com",
+  reddit: "https://www.reddit.com",
+
+  // Car brands
+  bmw: "https://www.bmw.com/",
+  tesla: "https://www.tesla.com/",
+  mercedes: "https://www.mercedes-benz.com/",
+  audi: "https://www.audi.com/",
+  toyota: "https://www.toyota-global.com/",
+  honda: "https://www.honda.com/",
+  ford: "https://www.ford.com/",
+
+  // TV / News Channels
+  cnn: "https://www.cnn.com",
+  bbc: "https://www.bbc.com",
+  ndtv: "https://www.ndtv.com",
+  foxnews: "https://www.foxnews.com",
+  timesnow: "https://www.timesnownews.com",
+  aljazeera: "https://www.aljazeera.com",
+  
+  // Email / Drive / Maps
+  gmail: "https://mail.google.com",
+  drive: "https://drive.google.com",
+  maps: "https://maps.google.com",
+
+  // Other useful sites
+  wikipedia: "https://www.wikipedia.org",
+  stackexchange: "https://stackexchange.com",
+  quora: "https://www.quora.com",
+  ycombinator: "https://news.ycombinator.com"
+
+  };
+
+  // Wikipedia summary + main thumbnail
+  async function wikiSummary(query){
+    try{
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('wiki error');
+      const data = await res.json();
+      const extract = data.extract || 'No summary found.';
+      const thumb = data.thumbnail?.source ? `<img src="${data.thumbnail.source}" alt="${sanitize(query)}" style="max-height:140px;border-radius:8px;margin-top:8px"/>` : '';
+      return {
+        html: `🌐 <b>Wikipedia:</b> ${sanitize(extract)}${thumb}`,
+        title: data.title || query
+      };
+    }catch(e){
+      return { html: ' or use this link ', title: query };
+    }
+  }
+
+  // Wikimedia Commons image gallery
+  async function commonsImages(query){
+    try{
+      const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=8&prop=imageinfo&iiprop=url&format=json&origin=*`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('commons error');
+      const data = await res.json();
+      const pages = data.query?.pages ? Object.values(data.query.pages) : [];
+      const imgs = pages
+        .map(p => p.imageinfo && p.imageinfo[0]?.url)
+        .filter(Boolean)
+        .filter(u => /\.(jpg|jpeg|png|gif|svg)$/i.test(u))
+        .slice(0, 6);
+      if (!imgs.length) return '';
+      return `<div class="image-gallery">${imgs.map(src => `<img src="${src}" loading="lazy" alt="${sanitize(query)}">`).join('')}</div>`;
+    }catch(e){
+      return '';
+    }
+  }
+
+  // "Google-style" results without keys: show official link if known + Google search page link
+  function googleLinks(query){
+    const q = query.trim().toLowerCase();
+    const links = [];
+    if (knownOfficial[q]) {
+      links.push({ title: 'Official site', url: knownOfficial[q] });
+    }
+    // Always provide a Google results page link
+    links.push({ title: 'See more on Google', url: `https://www.google.com/search?q=${encodeURIComponent(query)}` });
+    return `
+      <div class="links">
+        ${links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">🔗 ${sanitize(l.title)}</a>`).join('')}
+      </div>
+    `;
+  }
+
+  // Combined search: Wikipedia + image gallery + smart links
+  async function googleModeSearch(query){
+    addTyping();
+    const [wiki, gallery] = await Promise.all([wikiSummary(query), commonsImages(query)]);
+    removeTyping();
+    const block = `
+      <div class="card">
+        <div><b>🔎 Google mode:</b> ${sanitize(query)}</div>
+        ${wiki.html}
+        ${gallery}
+        ${googleLinks(query)}
+      </div>
+    `;
+    addRow('bot', block);
+  }
+
+  // Dock interactions
+  document.querySelectorAll('#dock .dock-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('#dock .dock-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      const app = item.getAttribute('data-app');
+      if (app === 'google') {
+        document.getElementById('gq').focus();
+      } else if (app === 'netflix') {
+        addRow('user', 'netflix');
+        // Netflix: show login + wiki + images
+        googleModeSearch('Netflix');
+      } else {
+        const url = apps[app] || null;
+        if (url) {
+          const html = `
+            <div class="card">
+              <div><b>App:</b> ${sanitize(app)}</div>
+              <div class="links">
+                <a href="${url}" target="_blank" rel="noopener">🔗 Open ${sanitize(app)}</a>
+              </div>
+            </div>
+          `;
+          addRow('bot', html);
+        }
+      }
+    });
+  });
+
+  // Header centered Google search
+  const gInput = document.getElementById('gq');
+  const gBtn = document.getElementById('gSearchBtn');
+  gBtn.addEventListener('click', () => {
+    const q = gInput.value.trim();
+    if (!q) return;
+    addRow('user', sanitize(q));
+    googleModeSearch(q);
+    gInput.value = '';
+  });
+  gInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') gBtn.click();
+  });
+
+  // Greeting
+  addRow('bot', "Hello! I'm <b>PLUTO AI</b> 🌠 — your space & knowledge assistant. Use the Google bar above or tap an app below.");
+</script>
+</body>
+</html>
